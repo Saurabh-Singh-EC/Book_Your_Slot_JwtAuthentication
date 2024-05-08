@@ -1,4 +1,4 @@
-package com.codeWithSrb.BookYourSlot.common;
+package com.codeWithSrb.BookYourSlot.Exception;
 
 public class InvalidRequestException extends RuntimeException{
 

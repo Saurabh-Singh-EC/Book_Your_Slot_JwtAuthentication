@@ -6,7 +6,7 @@ import com.codeWithSrb.BookYourSlot.Model.UserInfo;
 import com.codeWithSrb.BookYourSlot.Service.BookingService;
 import com.codeWithSrb.BookYourSlot.Service.JwtService;
 import com.codeWithSrb.BookYourSlot.Service.UserDetailsServiceImpl;
-import com.codeWithSrb.BookYourSlot.common.InvalidRequestException;
+import com.codeWithSrb.BookYourSlot.Exception.InvalidRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,8 +35,8 @@ public class Controller {
 
     @PostMapping("/register")
     public String registerNewUser(@RequestBody UserInfo userInfo) {
-        userDetailsServiceImpl.registerNewUser(userInfo);
-        return "New user registration is successful";
+        UserInfo response = userDetailsServiceImpl.registerNewUser(userInfo);
+        return String.format("New user registration with name :%s is successful", response.getUserName());
     }
 
     @GetMapping()
@@ -48,23 +48,17 @@ public class Controller {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_ADMIN')")
     public BookingDetails retrieveBooking(@PathVariable (value = "id") int id) {
-        BookingDetails bookingDetails = null;
-        try {
-            bookingDetails = bookingService.retrieveBooking(id);
-            System.out.println(bookingDetails.getUserFirstName());
-        } catch (InvalidRequestException e) {
-            System.out.println("Exception occurred while retrieving the booking");
-            System.out.println(e.getMessage());
-        } catch (Exception e) {
-            System.out.printf("An exception occurred while retrieving the booking for user id: %s", id);
-        }
-        return bookingDetails;
+        return bookingService.retrieveBooking(id);
     }
 
     @PostMapping()
     @PreAuthorize("hasAnyAuthority('ROLE_USER','ROLE_ADMIN')")
     public String createBooking(@RequestBody BookingDetails bookingDetails) {
-        return bookingService.createBooking(bookingDetails);
+        if(bookingService.checkIfAlreadyBookingExists(bookingDetails)) {
+            return String.format("A booking already exists with user name %s %s", bookingDetails.getUserFirstName(), bookingDetails.getUserLastName());
+        }
+        BookingDetails response = bookingService.createBooking(bookingDetails);
+        return String.format("Booking with Id %s created successfully for the user %s", response.getId(), response.getUserFirstName());
     }
 
     @DeleteMapping("/{id}")

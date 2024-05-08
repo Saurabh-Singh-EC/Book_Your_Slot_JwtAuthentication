@@ -2,7 +2,7 @@ package com.codeWithSrb.BookYourSlot.Service;
 
 import com.codeWithSrb.BookYourSlot.Model.BookingDetails;
 import com.codeWithSrb.BookYourSlot.Repository.BookingRepository;
-import com.codeWithSrb.BookYourSlot.common.InvalidRequestException;
+import com.codeWithSrb.BookYourSlot.Exception.InvalidRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +27,14 @@ public class BookingService {
         if(booking.isPresent()) {
             return booking.get();
         } else {
-            throw new InvalidRequestException("unable to retrieve the booking for booking id: " + id);
+            throw new InvalidRequestException("No booking found for id: " + id);
         }
     }
 
-    public String createBooking(BookingDetails bookingDetails) {
-        bookingRepository.save(bookingDetails);
-        return "successfully created a new booking";
+    public BookingDetails createBooking(BookingDetails bookingDetails) {
+        BookingDetails response = bookingRepository.save(bookingDetails);
+        System.err.printf("successfully created a new booking with Id %s", response.getId());
+        return response;
     }
 
     public String deleteBooking(int id) {
@@ -56,5 +57,10 @@ public class BookingService {
         } else {
             return "Booking with user id: " + id + " is not present";
         }
+    }
+
+    public boolean checkIfAlreadyBookingExists(BookingDetails bookingDetails) {
+        Optional<BookingDetails> details = bookingRepository.findByUserFirstName(bookingDetails.getUserFirstName());
+        return details.isPresent();
     }
 }

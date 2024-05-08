@@ -28,9 +28,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found :" + username));
     }
 
-    public void registerNewUser(UserInfo userInfo) {
+    public UserInfo registerNewUser(UserInfo userInfo) {
         userInfo.setPassword(passwordEncoder.encode(userInfo.getPassword()));
         UserInfo response = userRepository.save(userInfo);
-        System.out.printf("New user has been created with name :%s", userInfo.getUserName());
+        System.err.printf("New user has been created with name :%s%n", userInfo.getUserName());
+        return response;
     }
 }
